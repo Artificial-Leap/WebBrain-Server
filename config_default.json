@@ -1,0 +1,7 @@
+{
+  "bot_token": "",
+  "prefix": "!",
+  "openai_key": "",
+  "db_name": "db.sqlite",
+  "dalle_key": ""
+}
