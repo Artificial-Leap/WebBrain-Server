@@ -1,4 +1,5 @@
 {
+  "server_port": 65535,
   "bot_token": "",
   "prefix": "!",
   "openai_key": "",

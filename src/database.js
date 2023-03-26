@@ -25,7 +25,103 @@ export default class database {
       await this.db.run(
         "CREATE TABLE IF NOT EXISTS chat_history(channel TEXT, sender TEXT, receiver TEXT, text TEXT, timestamp INTEGER)"
       );
+      await this.db.run(
+        "CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, brains TEXT)"
+      );
+      await this.db.run(
+        "CREATE TABLE IF NOT EXISTS brains(id TEXT, test1 TEXT, test2 TEXT)"
+      );
     }
+  };
+
+  login = async (username, password) => {
+    const query = "SELECT * FROM users WHERE username = ? AND password = ?";
+    const result = await this.db.get(query, [username, password]);
+
+    if (!result || result.length === 0) {
+      return "Invalid credentials";
+    }
+
+    return result;
+  };
+
+  register = async (username, password) => {
+    if (await this.usernameExists(username)) {
+      return "Username already exists";
+    }
+
+    await this.db.run("INSERT INTO users VALUES(?, ?, ?)", [
+      username,
+      password,
+      "",
+    ]);
+
+    return "ok";
+  };
+
+  generateBrainId = async () => {
+    const query = "SELECT * FROM brains";
+    const result = await this.db.all(query);
+
+    return result.length;
+  };
+
+  addBrain = async (username) => {
+    const brain = await this.generateBrainId();
+    const query = "SELECT * FROM users WHERE username = ?";
+    const result = await this.db.get(query, [username]);
+    const brains = result.brains.split(",");
+    brains.push(brain);
+    await this.db.run("UPDATE users SET brains = ? WHERE username = ?", [
+      brains.join(","),
+      username,
+    ]);
+    await this.db.run("INSERT INTO brains VALUES(?, ?, ?)", [
+      brain,
+      "test1",
+      "test2",
+    ]);
+  };
+
+  getBrains = async (username) => {
+    const query = "SELECT * FROM users WHERE username = ?";
+    const result = await this.db.get(query, [username]);
+    console.log("result");
+    console.log(result);
+    if (result) {
+      let brains = result.brains.split(",");
+      console.log(brains);
+      brains = brains.filter((brain) => brain !== "");
+      return brains;
+    }
+    return [];
+  };
+
+  getBrain = async (id) => {
+    const query = "SELECT * FROM brains WHERE id = ?";
+    const result = await this.db.get(query, [id]);
+    return result;
+  };
+
+  deleteBrain = async (username, brain) => {
+    const query = "SELECT * FROM users WHERE username = ?";
+    const result = await this.db.get(query, [username]);
+    const brains = result.brains.split(",");
+    const index = brains.indexOf(brain);
+    if (index > -1) {
+      brains.splice(index, 1);
+    }
+    await this.db.run("UPDATE users SET brains = ? WHERE username = ?", [
+      brains.join(","),
+      username,
+    ]);
+    await this.db.run("DELETE FROM brains WHERE id = ?", [brain]);
+  };
+
+  usernameExists = async (username) => {
+    const query = "SELECT * FROM users WHERE username = ?";
+    const result = await this.db.get(query, [username]);
+    return result && result.length > 0;
   };
 
   addMessage = async (channel, sender, text, timestamp) => {

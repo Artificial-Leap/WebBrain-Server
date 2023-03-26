@@ -7,9 +7,12 @@ import handleMessage, {
 import database from "./database.js";
 import should_respond from "./conversation_manager.js";
 import painter from "./painter.js";
+import server from "./server.js";
 
 new database();
+new server(config.server_port);
 
+/*
 const available_channels = { "1065344514723680286": null };
 setInterval(async () => {
   for (let i = 0; i < available_channels.length; i++) {
@@ -64,6 +67,7 @@ client.on(Events.InteractionCreate, (interaction) => {
 
   message.channel.send({ content: 'I think you should,', ephemeral: true, embeds: [embed], components: [row] });
   */
+ /*
 });
 
 client.on(Events.MessageCreate, async (message) => {
@@ -139,3 +143,4 @@ client.on(Events.MessageCreate, async (message) => {
 });
 
 client.login(config.bot_token);
+*/
